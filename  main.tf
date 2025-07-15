@@ -45,6 +45,7 @@ resource "azurerm_network_security_group" "honeypot" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
+  # SSH (restricted to your IP)
   security_rule {
     name                       = "AllowSSH"
     priority                   = 1001
@@ -56,7 +57,44 @@ resource "azurerm_network_security_group" "honeypot" {
     source_address_prefix      = var.admin_ip
     destination_address_prefix = "*"
   }
-  # Add more rules for honeypot ports as needed
+
+  # HTTP (open to all)
+  security_rule {
+    name                       = "AllowHTTP"
+    priority                   = 1002
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  # HTTPS (open to all)
+  security_rule {
+    name                       = "AllowHTTPS"
+    priority                   = 1003
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+    security_rule {
+    name                       = "AllowTpotWebUI"
+    priority                   = 1004
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    destination_port_range     = "64297"
+    source_port_range          = "*"
+    source_address_prefix      = var.admin_ip   # Secure: only my IP
+    destination_address_prefix = "*"
+  }
+
 }
 
 resource "azurerm_network_interface_security_group_association" "main" {
