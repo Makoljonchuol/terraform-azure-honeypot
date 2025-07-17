@@ -1,8 +1,3 @@
-# Configure the Azure provider
-provider "azurerm" {
-  features {}
-}
-
 # Create a resource group to contain all resources
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
