@@ -1,12 +1,15 @@
+# Configure the Azure provider
 provider "azurerm" {
   features {}
 }
 
+# Create a resource group to contain all resources
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
 }
 
+# Create a virtual network for the honeypot environment
 resource "azurerm_virtual_network" "main" {
   name                = var.vnet_name
   address_space       = [var.vnet_address_space]
@@ -14,6 +17,7 @@ resource "azurerm_virtual_network" "main" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
+# Create a subnet within the virtual network for the honeypot VM
 resource "azurerm_subnet" "honeypot" {
   name                 = var.subnet_name
   resource_group_name  = azurerm_resource_group.main.name
@@ -21,6 +25,7 @@ resource "azurerm_subnet" "honeypot" {
   address_prefixes     = [var.subnet_address_prefix]
 }
 
+# Provision a public IP address for external access to the honeypot VM
 resource "azurerm_public_ip" "main" {
   name                = "honeypot-public-ip"
   location            = azurerm_resource_group.main.location
@@ -28,6 +33,7 @@ resource "azurerm_public_ip" "main" {
   allocation_method   = "Dynamic"
 }
 
+# Create a network interface and attach it to the subnet and public IP
 resource "azurerm_network_interface" "main" {
   name                = "honeypot-nic"
   location            = azurerm_resource_group.main.location
@@ -40,12 +46,13 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
+# Define a network security group with rules for SSH, HTTP, HTTPS, and T-Pot Web UI
 resource "azurerm_network_security_group" "honeypot" {
   name                = "honeypot-nsg"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  # SSH (restricted to your IP)
+  # Allow SSH access only from the admin's IP address
   security_rule {
     name                       = "AllowSSH"
     priority                   = 1001
@@ -58,7 +65,7 @@ resource "azurerm_network_security_group" "honeypot" {
     destination_address_prefix = "*"
   }
 
-  # HTTP (open to all)
+  # Allow HTTP access from any source
   security_rule {
     name                       = "AllowHTTP"
     priority                   = 1002
@@ -71,7 +78,7 @@ resource "azurerm_network_security_group" "honeypot" {
     destination_address_prefix = "*"
   }
 
-  # HTTPS (open to all)
+  # Allow HTTPS access from any source
   security_rule {
     name                       = "AllowHTTPS"
     priority                   = 1003
@@ -83,7 +90,9 @@ resource "azurerm_network_security_group" "honeypot" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-    security_rule {
+
+  # Allow access to T-Pot Web UI only from the admin's IP address
+  security_rule {
     name                       = "AllowTpotWebUI"
     priority                   = 1004
     direction                  = "Inbound"
@@ -94,14 +103,15 @@ resource "azurerm_network_security_group" "honeypot" {
     source_address_prefix      = var.admin_ip   # Secure: only my IP
     destination_address_prefix = "*"
   }
-
 }
 
+# Associate the network security group with the network interface
 resource "azurerm_network_interface_security_group_association" "main" {
   network_interface_id      = azurerm_network_interface.main.id
   network_security_group_id = azurerm_network_security_group.honeypot.id
 }
 
+# Provision the honeypot Linux virtual machine and configure it with T-Pot
 resource "azurerm_linux_virtual_machine" "honeypot" {
   name                = var.vm_name
   resource_group_name = azurerm_resource_group.main.name
@@ -123,6 +133,6 @@ resource "azurerm_linux_virtual_machine" "honeypot" {
     username   = var.admin_username
     public_key = file(var.ssh_public_key_path)
   }
-  custom_data = filebase64("scripts/install_tpot.sh")
+  custom_data = filebase64("scripts/install_tpot.sh") # Bootstrap script for T-Pot installation
   tags        = var.tags
 }
