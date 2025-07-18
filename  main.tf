@@ -25,7 +25,8 @@ resource "azurerm_public_ip" "main" {
   name                = "honeypot-public-ip"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
+  sku                 = "Standard"
 }
 
 # Create a network interface and attach it to the subnet and public IP

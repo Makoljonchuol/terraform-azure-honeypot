@@ -15,8 +15,8 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "eastus"
-  # Set the Azure region for resource deployment. Default is 'eastus'.
+  default     = "westus"
+  # Set the Azure region for resource deployment. Default is 'westusus'.
 }
 
 #------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ variable "vm_name" {
 variable "vm_size" {
   description = "Azure VM size"
   type        = string
-  default     = "Standard_D4s_v3"
+  default     = "Standard_B2s"
   # Specifies the size of the VM. Adjust based on workload requirements.
 }
 
@@ -95,6 +95,16 @@ variable "admin_ip" {
   description = "Your public IP for SSH access"
   type        = string
   # Restricts SSH access to the VM from this public IP address.
+}
+
+#------------------------------------------------------------------------------
+# Subscription Variables
+#------------------------------------------------------------------------------
+
+variable "subscription_id" {
+  description = "Azure Subscription ID"
+  type        = string
+  # The Subscription ID that Terraform will deploy resources into.
 }
 
 #------------------------------------------------------------------------------

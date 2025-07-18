@@ -192,3 +192,92 @@ You will be prompted to create a web username and password during the T-Pot inst
 ## License
 
 This project is for internal use, education, security research, and training purposes only.
+## Azure Authentication and Configuration
+
+### Prerequisites
+
+Before deploying with Terraform, ensure you have:
+
+- Azure CLI installed
+- Valid Azure account with permissions
+- Active Azure subscription
+
+### Authentication Setup
+
+#### Azure CLI Authentication
+
+This project uses Azure CLI for authentication, allowing Terraform to authorize API requests securely without storing credentials in files.
+
+**Installation and Setup:**
+
+1. Install Azure CLI:
+    ```bash
+    brew install azure-cli
+    ```
+2. Verify installation:
+    ```bash
+    az --version
+    ```
+3. Login to Azure:
+    ```bash
+    az login
+    ```
+4. Select subscription (if needed):
+    ```bash
+    az account set --subscription "SUBSCRIPTION_ID_OR_NAME"
+    ```
+5. Confirm active subscription:
+    ```bash
+    az account show
+    ```
+
+**Terraform Provider Configuration:**
+```hcl
+provider "azurerm" {
+  features {}
+}
+```
+Terraform uses the credentials and subscription from your Azure CLI session.
+
+### Required Configuration Values
+
+1. **Azure Subscription ID:**
+    ```bash
+    az account show --query id -o tsv
+    ```
+2. **Public IP Address:**
+    ```bash
+    curl https://api.ipify.org
+    ```
+3. **Terraform Variables:**
+    Update `terraform.tfvars`:
+    ```hcl
+    subscription_id = "your-subscription-id-here"
+    admin_ip        = "your-public-ip-here/32"
+    ```
+    Example:
+    ```hcl
+    subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    admin_ip        = "198.51.100.13/32"
+    ```
+
+### Security Benefits
+
+- No embedded secrets in code or configs
+- Simplified authentication for developers
+- Permission-scoped access
+- IP-restricted SSH and management access
+
+### Best Practices
+
+- Use Azure CLI authentication for local development
+- Switch to Service Principal for CI/CD and production
+- Always use `/32` for IP restriction
+- Team members should use correct subscription and trusted IPs
+
+### Troubleshooting
+
+- Check current account: `az account show`
+- Verify permissions in subscription
+- Ensure IP address matches configuration
+- Re-authenticate if needed: `az login`
